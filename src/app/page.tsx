@@ -1,12 +1,11 @@
-// src/app/page.tsx
-
 export default function HomePage() {
   return (
-    <main className="text-center py-10">
-      <h1 className="text-4xl font-bold mb-4">Welcome to Onerinn</h1>
-      <p className="text-lg text-gray-600">
-        A space for artists, creators, and dreamers.
+    <main className="text-center py-20">
+      <h1 className="text-5xl font-extrabold mb-6">Welcome to Onerinn</h1>
+      <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+        A creative space for artists, creators, and dreamers in Kazakhstan and beyond.
+        Discover, rent, and buy unique artworks.
       </p>
     </main>
-  )
+  );
 }
