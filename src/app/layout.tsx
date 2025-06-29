@@ -1,26 +1,27 @@
-import './globals.css'
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import Navbar from '@/components/Navbar'
+import { notFound } from 'next/navigation';
+import { locales } from '@/i18n';
+import Providers from '../providers';
 
-const inter = Inter({ subsets: ['latin'] })
-
-export const metadata: Metadata = {
-  title: 'Onerinn',
-  description: 'A space for artists and dreamers',
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
 }
 
-export default function RootLayout({
+export default function LocaleLayout({
   children,
+  params: { locale },
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
+  params: { locale: string };
 }) {
+  if (!locales.includes(locale as any)) {
+    notFound();
+  }
+
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <Navbar />
-        {children}
+    <html lang={locale}>
+      <body>
+        <Providers>{children}</Providers>
       </body>
     </html>
-  )
+  );
 }

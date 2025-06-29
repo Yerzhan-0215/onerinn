@@ -1,42 +1,62 @@
-// src/app/register/page.tsx
+'use client';
+
+import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
 export default function RegisterPage() {
+  const t = useTranslations('Register');
+  const router = useRouter();
+
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      body: JSON.stringify({ username, email, password }),
+    });
+
+    if (res.ok) {
+      router.push('/login');
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Create an Account</h1>
-        <form className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Name</label>
-            <input
-              type="text"
-              placeholder="Your name"
-              className="mt-1 w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              className="mt-1 w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Password</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              className="mt-1 w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 transition"
-          >
-            Register
-          </button>
-        </form>
-      </div>
+    <div className="flex justify-center items-center h-screen">
+      <form onSubmit={handleSubmit} className="border p-8 rounded w-[400px] shadow">
+        <h1 className="text-2xl font-bold mb-4">{t('title')}</h1>
+        <input
+          type="text"
+          placeholder={t('username')}
+          className="border px-4 py-2 mb-2 w-full"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="email"
+          placeholder={t('email')}
+          className="border px-4 py-2 mb-2 w-full"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder={t('password')}
+          className="border px-4 py-2 mb-4 w-full"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700"
+        >
+          {t('submit')}
+        </button>
+      </form>
     </div>
   );
 }
