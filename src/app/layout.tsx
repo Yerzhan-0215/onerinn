@@ -1,27 +1,11 @@
-import { notFound } from 'next/navigation';
-import { locales } from '@/i18n';
-import Providers from '../providers';
+// src/app/layout.tsx
+import './globals.css'
+import { ReactNode } from 'react'
 
-export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
-}
-
-export default function LocaleLayout({
-  children,
-  params: { locale },
-}: {
-  children: React.ReactNode;
-  params: { locale: string };
-}) {
-  if (!locales.includes(locale as any)) {
-    notFound();
-  }
-
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang={locale}>
-      <body>
-        <Providers>{children}</Providers>
-      </body>
+    <html lang="en">
+      <body>{children}</body>
     </html>
-  );
+  )
 }
