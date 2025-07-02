@@ -1,7 +1,19 @@
-// src/app/page.tsx
-import { redirect } from 'next/navigation'
-import { defaultLocale } from '@/i18n.ts'
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  redirect(`/${defaultLocale}`)
+  const router = useRouter();
+
+  useEffect(() => {
+    const savedLocale = localStorage.getItem('preferredLocale') || 'en';
+    router.replace(`/${savedLocale}`);
+  }, []);
+
+  return (
+    <main className="min-h-screen flex items-center justify-center">
+      <p>Redirecting to your language page...</p>
+    </main>
+  );
 }
