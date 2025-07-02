@@ -14,7 +14,6 @@ export default function Navbar() {
   const currentLocale = pathname.split('/')[1];
   const [language, setLanguage] = useState(currentLocale);
 
-  // 自动从 localStorage 读取语言偏好
   useEffect(() => {
     const savedLocale = localStorage.getItem('preferredLocale');
     if (savedLocale && savedLocale !== currentLocale) {
@@ -36,17 +35,20 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow sticky top-0 z-50 mb-8">
-
+    <nav className="bg-white shadow sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Logo */}
-        <Link href={`/${language}`} className="text-xl font-bold text-black">
-          Onerinn
-        </Link>
+        {/* Logo + Artworks Group */}
+        <div className="flex items-center space-x-2">
+          <Link href={`/${language}`} className="text-xl font-bold text-black">
+            Onerinn
+          </Link>
+          <Link href={`/${language}/artworks`} className="hover:text-blue-600">
+            Artworks
+          </Link>
+        </div>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-6">
-          <Link href={`/${language}/artworks`} className="hover:text-blue-600">Artworks</Link>
           <Link href={`/${language}/rentals`} className="hover:text-blue-600">Rentals</Link>
           <Link href={`/${language}/login`} className="hover:text-blue-600">Login</Link>
           <Link href={`/${language}/register`} className="hover:text-blue-600">Register</Link>
