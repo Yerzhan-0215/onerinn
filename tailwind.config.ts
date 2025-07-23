@@ -1,10 +1,10 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from 'tailwindcss';
 
 const config: Config = {
   content: [
-    './src/**/*.{js,ts,jsx,tsx}',     // 主代码路径
-    './app/**/*.{js,ts,jsx,tsx}',     // Next.js app 目录（如有）
-    './pages/**/*.{js,ts,jsx,tsx}',   // 如果你用了 pages 目录
+    './src/**/*.{js,ts,jsx,tsx}',
+    './app/**/*.{js,ts,jsx,tsx}',
+    './pages/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {
@@ -13,12 +13,18 @@ const config: Config = {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
+        'fade-zoom-in': {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
       },
       animation: {
         'fade-in': 'fade-in 2s ease-in-out',
+        'fade-zoom-in': 'fade-zoom-in 2s ease-in-out',
       },
     },
   },
   plugins: [],
-}
-export default config
+};
+
+export default config;
