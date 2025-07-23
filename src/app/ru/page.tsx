@@ -5,13 +5,14 @@ import BackgroundLogo from '@/components/BackgroundLogo';
 
 export default function RussianHomePage() {
   return (
-    <div className="flex flex-col min-h-screen overflow-hidden relative">
+    <div className="relative flex flex-col items-center text-center min-h-[85vh] overflow-hidden mb-4">
+      {/* 背景图 */}
       <BackgroundLogo />
 
-      {/* 主体内容：垂直偏上约 1/3 */}
-      <main className="flex-grow flex flex-col items-center text-center px-4 pt-[20vh]">
+      {/* 内容区域上移 */}
+      <div className="mt-[12vh] px-4 flex flex-col items-center">
         {/* 搜索框 */}
-        <div className="w-full max-w-xl flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white bg-opacity-80 backdrop-blur-md">
+        <div className="w-full max-w-xl flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white/20 backdrop-blur-md">
           <MagnifyingGlassIcon className="h-5 w-5 text-gray-500 mr-2" />
           <input
             type="text"
@@ -28,7 +29,7 @@ export default function RussianHomePage() {
         <p className="text-base md:text-lg text-gray-600">
           Удивительное путешествие в мир аренды электроники и выставок искусства!
         </p>
-      </main>
+      </div>
     </div>
   );
 }

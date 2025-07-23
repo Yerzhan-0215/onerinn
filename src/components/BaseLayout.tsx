@@ -1,11 +1,12 @@
-import React from 'react'; // ✅ 必须添加
-import Navbar from './Navbar';
-import Footer from './Footer';
-import BackgroundLogo from './BackgroundLogo';
+'use client';
+
+import React from 'react';
+import Navbar from './Navbar'; // 或者你的导航栏组件路径
+import Footer from './Footer'; // 同上
 
 export default function BaseLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex flex-col min-h-[calc(100vh-1px)] overflow-x-hidden">
+    <div className="relative min-h-screen overflow-hidden">
       <Navbar />
       <main className="flex-grow">{children}</main>
       <Footer />

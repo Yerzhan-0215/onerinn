@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -87,16 +87,10 @@ export default function Navbar() {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        langMenuRef.current &&
-        !langMenuRef.current.contains(event.target as Node)
-      ) {
+      if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
         setShowLangMenu(false);
       }
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
       }
     }
@@ -121,36 +115,27 @@ export default function Navbar() {
 
   return (
     <nav className="w-full bg-white text-black px-6 py-3 flex justify-between items-center shadow-sm relative z-50">
-      {/* Logo */}
-      <Link href={`/${lang === 'en' ? '' : lang}`} className="text-xl font-bold text-blue-600">
-        Onerinn
-      </Link>
-
-      {/* Menu Items */}
-      <div className="flex items-center text-sm text-gray-600 font-normal">
-        <Link href="/artworks" className="hover:text-black transition mr-10">
+      {/* Left: Logo + Menu */}
+      <div className="flex items-center space-x-8">
+        <Link href={`/${lang === 'en' ? '' : lang}`} className="text-xl font-bold text-blue-600">
+          Önerinn
+        </Link>
+        <Link href="/artworks" className="text-sm text-gray-600 hover:text-black">
           {t.artworks}
         </Link>
-        <Link href="/rentals" className="hover:text-black transition ml-20">
+        <Link href="/rentals" className="text-sm text-gray-600 hover:text-black">
           {t.rentals}
         </Link>
-      </div>
-
-      {/* Right Buttons */}
-      <div className="flex items-center space-x-4 text-sm">
-        <button className="flex items-center text-gray-600 hover:text-black">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 mr-1"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+        <button className="flex items-center text-gray-600 hover:text-black text-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16V4H4zm4 4h8m-4 0v8" />
           </svg>
           {t.install}
         </button>
+      </div>
 
+      {/* Right: Auth & Language */}
+      <div className="flex items-center space-x-4 text-sm">
         {user ? (
           <div className="relative" ref={dropdownRef}>
             {user.avatarUrl ? (
@@ -168,16 +153,10 @@ export default function Navbar() {
             )}
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg">
-                <Link
-                  href="/profile"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
+                <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   {t.profile}
                 </Link>
-                <Link
-                  href="/profile/edit"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
+                <Link href="/profile/edit" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   {t.edit}
                 </Link>
                 <button

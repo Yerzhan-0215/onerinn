@@ -48,3 +48,16 @@ html, body {
 *, *::before, *::after {
   box-sizing: inherit;
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.1; /* 半透明 */
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 2s ease-in-out forwards;
+}

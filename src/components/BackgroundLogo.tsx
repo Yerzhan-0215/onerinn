@@ -1,16 +1,19 @@
 import Image from 'next/image';
+import background from '/public/images/onerinn-background.png';
 
-export default function BackgroundLogo() {
+const BackgroundLogo = () => {
   return (
-    <div className="fixed inset-0 -z-10 flex items-center justify-center pointer-events-none">
+    <div className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none z-0">
       <Image
-        src="/images/onerinn-logo.png"
-        alt="Onerinn Logo"
-        width={600} // 调小一点以避免撑出滚动条
-        height={600}
-        className="select-none opacity-10 animate-fade-zoom-in"
+        src={background}
+        alt="Onerinn Background"
+        fill
+        style={{ objectFit: 'contain' }}
+        className="opacity-10"
         priority
       />
     </div>
   );
-}
+};
+
+export default BackgroundLogo;
