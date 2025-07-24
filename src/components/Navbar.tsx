@@ -16,6 +16,7 @@ const labels = {
     logout: 'Выйти',
     profile: 'Профиль',
     edit: 'Редактировать',
+    about: 'О нас',
   },
   kk: {
     artworks: 'Өнер туындылары',
@@ -27,6 +28,7 @@ const labels = {
     logout: 'Шығу',
     profile: 'Профиль',
     edit: 'Өзгерту',
+    about: 'Біз туралы',
   },
   zh: {
     artworks: '艺术品',
@@ -38,6 +40,7 @@ const labels = {
     logout: '退出',
     profile: '我的主页',
     edit: '编辑资料',
+    about: '关于我们',
   },
   en: {
     artworks: 'Artworks',
@@ -49,6 +52,7 @@ const labels = {
     logout: 'Logout',
     profile: 'My Profile',
     edit: 'Edit Profile',
+    about: 'About Us',
   },
 };
 
@@ -115,26 +119,25 @@ export default function Navbar() {
 
   return (
     <nav className="w-full bg-white text-black px-6 py-3 flex justify-between items-center shadow-sm relative z-50">
-      {/* Left: Logo + Menu */}
+      {/* Left */}
       <div className="flex items-center space-x-8">
         <Link href={`/${lang === 'en' ? '' : lang}`} className="text-xl font-bold text-blue-600">
           Önerinn
         </Link>
-        <Link href="/artworks" className="text-sm text-gray-600 hover:text-black">
-          {t.artworks}
-        </Link>
-        <Link href="/rentals" className="text-sm text-gray-600 hover:text-black">
-          {t.rentals}
-        </Link>
-        <button className="flex items-center text-gray-600 hover:text-black text-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16V4H4zm4 4h8m-4 0v8" />
-          </svg>
-          {t.install}
-        </button>
+        <div className="flex space-x-6">
+          <Link href="/artworks" className="text-sm text-gray-600 hover:text-black">
+            {t.artworks}
+          </Link>
+          <Link href="/rentals" className="text-sm text-gray-600 hover:text-black">
+            {t.rentals}
+          </Link>
+          <Link href="/about" className="text-sm text-gray-600 hover:text-black">
+            {t.about}
+          </Link>
+        </div>
       </div>
 
-      {/* Right: Auth & Language */}
+      {/* Right */}
       <div className="flex items-center space-x-4 text-sm">
         {user ? (
           <div className="relative" ref={dropdownRef}>
@@ -153,15 +156,15 @@ export default function Navbar() {
             )}
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg">
-                <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <Link href="/profile" className="block px-4 py-2 hover:bg-gray-100">
                   {t.profile}
                 </Link>
-                <Link href="/profile/edit" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <Link href="/profile/edit" className="block px-4 py-2 hover:bg-gray-100">
                   {t.edit}
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
                 >
                   {t.logout}
                 </button>

@@ -12,7 +12,7 @@ export default function RussianHomePage() {
       {/* 内容区域上移 */}
       <div className="mt-[12vh] px-4 flex flex-col items-center">
         {/* 搜索框 */}
-        <div className="w-full max-w-xl flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white/20 backdrop-blur-md">
+        <div className="w-full max-w-xl flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white/10 backdrop-blur-md">
           <MagnifyingGlassIcon className="h-5 w-5 text-gray-500 mr-2" />
           <input
             type="text"
