@@ -17,6 +17,7 @@ const labels = {
     profile: 'Профиль',
     edit: 'Редактировать',
     about: 'О нас',
+    faq: 'Часто задаваемые вопросы',
   },
   kk: {
     artworks: 'Өнер туындылары',
@@ -29,6 +30,7 @@ const labels = {
     profile: 'Профиль',
     edit: 'Өзгерту',
     about: 'Біз туралы',
+    faq: 'Жиі қойылатын сұрақтар',
   },
   zh: {
     artworks: '艺术品',
@@ -41,6 +43,7 @@ const labels = {
     profile: '我的主页',
     edit: '编辑资料',
     about: '关于我们',
+    faq: '常见问题',
   },
   en: {
     artworks: 'Artworks',
@@ -53,6 +56,7 @@ const labels = {
     profile: 'My Profile',
     edit: 'Edit Profile',
     about: 'About Us',
+    faq: 'FAQ',
   },
 };
 
@@ -118,23 +122,28 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="w-full bg-white text-black px-6 py-3 flex justify-between items-center shadow-sm relative z-50">
+    <nav className="w-full bg-white text-black px-6 py-3 flex justify-between items-center shadow-sm relative z-50 overflow-hidden">
       {/* Left */}
       <div className="flex items-center space-x-8">
         <Link href={`/${lang === 'en' ? '' : lang}`} className="text-xl font-bold text-blue-600">
           Önerinn
         </Link>
-        <div className="flex space-x-6">
-          <Link href="/artworks" className="text-sm text-gray-600 hover:text-black">
-            {t.artworks}
-          </Link>
-          <Link href="/rentals" className="text-sm text-gray-600 hover:text-black">
-            {t.rentals}
-          </Link>
-          <Link href="/about" className="text-sm text-gray-600 hover:text-black">
-            {t.about}
-          </Link>
-        </div>
+      </div>
+
+      {/* Center */}
+      <div className="flex space-x-6">
+        <Link href="/artworks" className="text-sm text-gray-600 hover:text-black">
+          {t.artworks}
+        </Link>
+        <Link href="/rentals" className="text-sm text-gray-600 hover:text-black">
+          {t.rentals}
+        </Link>
+        <Link href="/about" className="text-sm text-gray-600 hover:text-black">
+          {t.about}
+        </Link>
+        <Link href={`/${lang === 'en' ? '' : lang}/faq`} className="text-sm text-gray-600 hover:text-black">
+          {t.faq}
+        </Link>
       </div>
 
       {/* Right */}

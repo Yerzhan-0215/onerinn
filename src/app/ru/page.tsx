@@ -5,7 +5,7 @@ import BackgroundLogo from '@/components/BackgroundLogo';
 
 export default function RussianHomePage() {
   return (
-    <div className="relative flex flex-col items-center text-center min-h-[85vh] overflow-hidden mb-4">
+    <div className="relative h-screen flex flex-col items-center justify-center text-center overflow-hidden">
       {/* 背景图 */}
       <BackgroundLogo />
 
@@ -23,7 +23,7 @@ export default function RussianHomePage() {
         </div>
 
         {/* 欢迎语 */}
-        <h1 className="text-3xl md:text-4xl font-bold mt-6 mb-2 bg-gradient-to-r from-indigo-600 to-sky-500 text-transparent bg-clip-text">
+        <h1 className="text-xl md:text-2xl font-bold mt-6 mb-2 bg-gradient-to-r from-indigo-600 to-sky-500 text-transparent bg-clip-text">
           Добро пожаловать в Onerinn!
         </h1>
         <p className="text-base md:text-lg text-gray-600">
