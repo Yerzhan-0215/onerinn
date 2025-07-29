@@ -17,8 +17,6 @@ const labels = {
     logout: 'Выйти',
     profile: 'Профиль',
     edit: 'Редактировать',
-    about: 'О нас',
-    faq: 'Часто задаваемые вопросы',
   },
   kk: {
     artworks: 'Өнер туындылары',
@@ -31,8 +29,6 @@ const labels = {
     logout: 'Шығу',
     profile: 'Профиль',
     edit: 'Өзгерту',
-    about: 'Біз туралы',
-    faq: 'Жиі қойылатын сұрақтар',
   },
   zh: {
     artworks: '艺术品',
@@ -45,8 +41,6 @@ const labels = {
     logout: '退出',
     profile: '我的主页',
     edit: '编辑资料',
-    about: '关于我们',
-    faq: '常见问题',
   },
   en: {
     artworks: 'Artworks',
@@ -59,8 +53,6 @@ const labels = {
     logout: 'Logout',
     profile: 'My Profile',
     edit: 'Edit Profile',
-    about: 'About Us',
-    faq: 'FAQ',
   },
 };
 
@@ -126,62 +118,6 @@ export default function Navbar() {
   };
 
   return (
-<<<<<<< HEAD
-    <nav className="w-full bg-white text-black px-6 py-3 flex justify-between items-center shadow-sm relative z-50 overflow-hidden">
-      {/* Left */}
-      <div className="flex items-center space-x-8">
-        <Link href={`/${lang === 'en' ? '' : lang}`} className="text-xl font-bold text-blue-600">
-          Önerinn
-        </Link>
-      </div>
-
-      {/* Center */}
-      <div className="flex space-x-6">
-        <Link href="/artworks" className="text-sm text-gray-600 hover:text-black">
-          {t.artworks}
-        </Link>
-        <Link href="/rentals" className="text-sm text-gray-600 hover:text-black">
-          {t.rentals}
-        </Link>
-        <Link href="/about" className="text-sm text-gray-600 hover:text-black">
-          {t.about}
-        </Link>
-        <Link href={`/${lang === 'en' ? '' : lang}/faq`} className="text-sm text-gray-600 hover:text-black">
-          {t.faq}
-        </Link>
-      </div>
-
-      {/* Right */}
-      <div className="flex items-center space-x-4 text-sm">
-        {user ? (
-          <div className="relative" ref={dropdownRef}>
-            {user.avatarUrl ? (
-              <img
-                src={user.avatarUrl}
-                alt="avatar"
-                className="h-8 w-8 rounded-full cursor-pointer hover:opacity-80"
-                onClick={() => setShowDropdown(!showDropdown)}
-              />
-            ) : (
-              <UserCircleIcon
-                className="h-7 w-7 text-gray-600 cursor-pointer hover:text-black"
-                onClick={() => setShowDropdown(!showDropdown)}
-              />
-            )}
-            {showDropdown && (
-              <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg">
-                <Link href="/profile" className="block px-4 py-2 hover:bg-gray-100">
-                  {t.profile}
-                </Link>
-                <Link href="/profile/edit" className="block px-4 py-2 hover:bg-gray-100">
-                  {t.edit}
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                >
-                  {t.logout}
-=======
     <nav className="w-full bg-white text-black px-6 py-3 shadow-sm relative z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* 左侧：Logo */}
@@ -191,21 +127,21 @@ export default function Navbar() {
 
         {/* 中间：四个按钮居中 */}
         <div className="flex space-x-6 justify-center flex-1">
-          <Link href="/artworks" className="text-sm text-gray-600 hover:text-black">
+          <Link href={`/${lang}/artworks`} className="text-sm text-gray-600 hover:text-black">
             {t.artworks}
           </Link>
-          <Link href="/rentals" className="text-sm text-gray-600 hover:text-black">
+          <Link href={`/${lang}/rentals`} className="text-sm text-gray-600 hover:text-black">
             {t.rentals}
           </Link>
-          <Link href="/app" className="text-sm text-gray-600 hover:text-black">
+          <Link href={`/${lang}/app`} className="text-sm text-gray-600 hover:text-black">
             {t.install}
           </Link>
-          <Link href="/faq" className="text-sm text-gray-600 hover:text-black">
+          <Link href={`/${lang}/faq`} className="text-sm text-gray-600 hover:text-black">
             {t.faq}
           </Link>
         </div>
 
-        {/* 右侧：登录注册 + 语言切换 */}
+        {/* 右侧：登录注册 + 语言切换器 */}
         <div className="flex items-center space-x-4 text-sm">
           {user ? (
             <div className="relative" ref={dropdownRef}>
@@ -241,11 +177,14 @@ export default function Navbar() {
             </div>
           ) : (
             <>
-              <Link href="/register" className="text-gray-600 hover:text-black font-medium">
+              <Link
+                href={`/${lang === 'en' ? '' : lang}/register`}
+                className="text-gray-600 hover:text-black font-medium"
+              >
                 {t.register}
               </Link>
               <Link
-                href="/login"
+                href={`/${lang === 'en' ? '' : lang}/login`}
                 className="bg-white text-black px-4 py-1.5 rounded-full border border-gray-300 hover:bg-gray-100 transition font-semibold"
               >
                 {t.login}
@@ -272,7 +211,6 @@ export default function Navbar() {
                 </button>
                 <button onClick={() => changeLang('zh')} className="block w-full px-4 py-2 text-left hover:bg-gray-100">
                   中文
->>>>>>> 3a7237c (最新更新，比如首页完成、轮播图等)
                 </button>
               </div>
             )}
