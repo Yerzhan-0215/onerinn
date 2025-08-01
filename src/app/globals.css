@@ -1,12 +1,18 @@
 @import "tailwindcss";
 
+<<<<<<< HEAD
 /* ✅ 颜色变量定义 */
+=======
+>>>>>>> 9ab25534740f28f708c6913260258c11441fdf4e
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
+<<<<<<< HEAD
 /* ✅ 自定义字体变量（如有） */
+=======
+>>>>>>> 9ab25534740f28f708c6913260258c11441fdf4e
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -14,7 +20,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
+<<<<<<< HEAD
 /* ✅ 深色模式支持 */
+=======
+>>>>>>> 9ab25534740f28f708c6913260258c11441fdf4e
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -22,15 +31,20 @@
   }
 }
 
+<<<<<<< HEAD
 /* ✅ 防止滚动条出现、设置字体和背景 */
 html, body {
   overflow-x: hidden;
   margin: 0;
   padding: 0;
+=======
+body {
+>>>>>>> 9ab25534740f28f708c6913260258c11441fdf4e
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+<<<<<<< HEAD
 
 /* ✅ 自定义动画延迟（如用于 logo 背景） */
 .anim-delay-1500 {
@@ -61,3 +75,5 @@ html, body {
 .animate-fadeIn {
   animation: fadeIn 2s ease-in-out forwards;
 }
+=======
+>>>>>>> 9ab25534740f28f708c6913260258c11441fdf4e
