@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { GlobeAltIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { GlobeAltIcon, UserCircleIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
 import { useEffect, useRef, useState } from 'react';
 
 const labels = {
   ru: {
+    home: 'Главная',
     artworks: 'Произведения',
     rentals: 'Аренда',
     install: 'Установить приложение',
@@ -17,8 +18,10 @@ const labels = {
     logout: 'Выйти',
     profile: 'Профиль',
     edit: 'Редактировать',
+    getApp: 'Скачать приложение',
   },
   kk: {
+    home: 'Басты бет',
     artworks: 'Өнер туындылары',
     rentals: 'Жалдау',
     install: 'Қолданбаны орнату',
@@ -29,8 +32,10 @@ const labels = {
     logout: 'Шығу',
     profile: 'Профиль',
     edit: 'Өзгерту',
+    getApp: 'Қолданбаны жүктеу',
   },
   zh: {
+    home: '首页',
     artworks: '艺术品',
     rentals: '租赁',
     install: '安装应用',
@@ -41,8 +46,10 @@ const labels = {
     logout: '退出',
     profile: '我的主页',
     edit: '编辑资料',
+    getApp: '获取应用',
   },
   en: {
+    home: 'Home',
     artworks: 'Artworks',
     rentals: 'Rentals',
     install: 'Install App',
@@ -53,12 +60,16 @@ const labels = {
     logout: 'Logout',
     profile: 'My Profile',
     edit: 'Edit Profile',
+    getApp: 'Get App',
   },
 };
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
+
+  if (!pathname) return null;
+
   const lang = pathname.startsWith('/ru')
     ? 'ru'
     : pathname.startsWith('/kk')
@@ -120,12 +131,44 @@ export default function Navbar() {
   return (
     <nav className="w-full bg-white text-black px-6 py-3 shadow-sm relative z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        {/* 左侧：Logo */}
-        <Link href={`/${lang === 'en' ? '' : lang}`} className="text-xl font-bold text-blue-600">
-          Önerinn
-        </Link>
+        {/* 左侧：Logo 图片 + 下载按钮 */}
+        <div className="flex items-center space-x-4">
+          <div className="relative group">
+            <Link
+              href={`/${lang === 'en' ? '' : lang}`}
+                            className="outline-none focus:outline-none"
+            >
+              <img
+                src="/images/onerinn-logo.png"
+                alt="Onerinn Logo"
+                className="h-8 w-auto object-contain"
+              />
+            </Link>
+            <div className="absolute left-0 top-full mt-1 hidden group-hover:block">
+              <div className="text-xs text-gray-600 bg-white px-2 py-1 rounded shadow pointer-events-none">
+                {t.home}
+              </div>
+            </div>
+          </div>
 
-        {/* 中间：四个按钮居中 */}
+          <div className="relative group cursor-pointer">
+            <div className="flex items-center space-x-1 text-sm text-gray-600 hover:text-black">
+              <DevicePhoneMobileIcon className="h-5 w-5" />
+              <span>{t.getApp}</span>
+            </div>
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block z-50">
+              <div className="w-[130px] h-[130px] bg-white border border-gray-300 shadow-md p-2 rounded-md">
+                <img
+                  src="/images/onerinn-qr.png"
+                  alt="QR Code"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 中间导航链接 */}
         <div className="flex space-x-6 justify-center flex-1">
           <Link href={`/${lang}/artworks`} className="text-sm text-gray-600 hover:text-black">
             {t.artworks}
@@ -133,15 +176,12 @@ export default function Navbar() {
           <Link href={`/${lang}/rentals`} className="text-sm text-gray-600 hover:text-black">
             {t.rentals}
           </Link>
-          <Link href={`/${lang}/app`} className="text-sm text-gray-600 hover:text-black">
-            {t.install}
-          </Link>
           <Link href={`/${lang}/faq`} className="text-sm text-gray-600 hover:text-black">
             {t.faq}
           </Link>
         </div>
 
-        {/* 右侧：登录注册 + 语言切换器 */}
+        {/* 右侧功能 */}
         <div className="flex items-center space-x-4 text-sm">
           {user ? (
             <div className="relative" ref={dropdownRef}>
@@ -192,7 +232,7 @@ export default function Navbar() {
             </>
           )}
 
-          {/* Language Switcher */}
+          {/* 语言切换器 */}
           <div className="relative" ref={langMenuRef}>
             <GlobeAltIcon
               className="h-5 w-5 text-gray-500 hover:text-black cursor-pointer"

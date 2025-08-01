@@ -2,9 +2,8 @@
 
 import { MagnifyingGlassIcon, MicrophoneIcon } from '@heroicons/react/24/outline';
 import BackgroundLogo from '@/components/BackgroundLogo';
-import AdCarousel from '@/components/AdCarousel';
 
-export default function Page() {
+export default function RussianHomePage() {
   return (
     <div className="relative flex flex-col items-center text-center min-h-[85vh] overflow-hidden mb-4">
       {/* 背景图 */}
@@ -30,11 +29,6 @@ export default function Page() {
         <p className="text-base md:text-lg text-gray-600">
           Удивительное путешествие в мир аренды электроники и выставок искусства!
         </p>
-      </div>
-
-      {/* 广告轮播区域 */}
-      <div className="w-full mt-8">
-        <AdCarousel />
       </div>
     </div>
   );

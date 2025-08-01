@@ -11,7 +11,7 @@ const config: Config = {
       keyframes: {
         'fade-in': {
           '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
+          '100%': { opacity: '0.2' }, // 最终透明度
         },
         'fade-zoom-in': {
           '0%': { opacity: '0', transform: 'scale(0.95)' },
@@ -19,7 +19,7 @@ const config: Config = {
         },
       },
       animation: {
-        'fade-in': 'fade-in 2s ease-in-out',
+        'fade-in': 'fade-in 2s ease-out forwards',
         'fade-zoom-in': 'fade-zoom-in 2s ease-in-out',
       },
     },
