@@ -1,65 +1,58 @@
+// src/app/api/forgot-password/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import crypto from 'crypto';
-import nodemailer from 'nodemailer';
+import { createToken } from '@/lib/resetTokens';
+import { allow } from '@/lib/rateLimiter';
 
-const prisma = new PrismaClient();
-
-// 环境变量中配置的发件邮箱（需你在 .env 中设置）
-const EMAIL_FROM = process.env.EMAIL_FROM || 'your@email.com';
-const SMTP_USER = process.env.SMTP_USER || '';
-const SMTP_PASS = process.env.SMTP_PASS || '';
+// 简易判断邮箱
+function looksLikeEmail(v: string) {
+  return /\S+@\S+\.\S+/.test(v);
+}
 
 export async function POST(req: Request) {
-  const { email } = await req.json();
+  try {
+    const { emailOrPhone, locale } = await req.json();
 
-  if (!email) {
-    return NextResponse.json({ message: 'Email обязателен' }, { status: 400 });
+    // —— 频控（内存版）——
+    const ip = getIP(req) || 'unknown';
+    // 同一 IP：1 分钟最多 10 次
+    if (!allow(`ip:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ ok: true }); // 仍返回 200，防止探测
+    }
+    // 同一账号：15 分钟最多 3 次
+    if (emailOrPhone && !allow(`acct:${emailOrPhone}`, 3, 15 * 60_000)) {
+      return NextResponse.json({ ok: true });
+    }
+
+    if (!emailOrPhone || typeof emailOrPhone !== 'string') {
+      return NextResponse.json({ ok: true });
+    }
+
+    // 1) 这里原本应查库是否存在该用户；为了防探测，继续生成 token 并发送（即使不存在）
+    const token = createToken(emailOrPhone, 30 * 60_000); // 30min
+
+    // 2) 组装链接（生产用你的正式域名）
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    const link = `${baseUrl}/${(locale || 'en')}/reset-password?token=${token}`;
+
+    // 3) 发送邮件或短信（占位）
+    if (looksLikeEmail(emailOrPhone)) {
+      console.log('[forgot-password] send email to:', emailOrPhone, 'link:', link);
+      // TODO: 发送邮件（nodemailer 或第三方）
+    } else {
+      console.log('[forgot-password] send sms to:', emailOrPhone, 'link:', link);
+      // TODO: 发送短信
+    }
+
+    // 统一返回成功
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ ok: true });
   }
+}
 
-  const user = await prisma.user.findUnique({ where: { email } });
-
-  if (!user) {
-    return NextResponse.json({ message: 'Пользователь не найден' }, { status: 404 });
-  }
-
-  // 生成随机 token
-  const token = crypto.randomBytes(32).toString('hex');
-  const expires = new Date(Date.now() + 1000 * 60 * 30); // 30分钟有效期
-
-  // 将 token 保存到数据库中（可以扩展你的 user 表结构，或创建单独 token 表）
-  await prisma.passwordResetToken.create({
-    data: {
-      token,
-      userId: user.id,
-      expires,
-    },
-  });
-
-  // 邮件链接（假设你有 /reset-password 页面）
-  const resetLink = `http://localhost:3000/reset-password?token=${token}`;
-
-  // 配置邮件服务（使用你自己的 SMTP 信息）
-  const transporter = nodemailer.createTransport({
-    service: 'gmail', // 或者"Yandex"、"Mail.ru"等
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
-    },
-  });
-
-  // 发送邮件
-  await transporter.sendMail({
-    from: EMAIL_FROM,
-    to: email,
-    subject: 'Сброс пароля',
-    html: `
-      <p>Здравствуйте, ${user.name || 'пользователь'}!</p>
-      <p>Нажмите на ссылку ниже, чтобы сбросить пароль:</p>
-      <a href="${resetLink}">Сбросить пароль</a>
-      <p>Ссылка действительна 30 минут.</p>
-    `,
-  });
-
-  return NextResponse.json({ message: 'Ссылка отправлена' });
+function getIP(req: Request) {
+  const h = (name: string) => req.headers.get(name) || '';
+  return h('x-forwarded-for').split(',')[0].trim() || h('x-real-ip') || '';
 }

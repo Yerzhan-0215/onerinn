@@ -1,0 +1,98 @@
+{
+  "Meta": {
+    "homeTitle": "Onerinn — Өнер және жалға алу"
+  },
+  "Home": {
+    "welcomeTitle": "Onerinn-ге қош келдіңіз!",
+    "welcomeSubtitle": "Электроника жалға алу және өнер туындыларын тамашалау әлеміне саяхат!",
+    "searchPlaceholder": "Іздеу: электрондық құрылғылар немесе өнер туындылары",
+    "ctaExploreArt": "Өнер туындылары",
+    "ctaBrowseRentals": "Жалға алу"
+  },
+  "Navbar": {
+    "artworks": "Өнер туындылары",
+    "rentals": "Жалға алу",
+    "getApp": "Қосымшаны орнату",
+    "faq": "FAQ",
+    "login": "Кіру",
+    "register": "Тіркелу",
+    "profile": "Менің профилім",
+    "editProfile": "Профильді өңдеу",
+    "edit": "Өңдеу",
+    "logout": "Шығу",
+    "language": "Тіл"
+  },
+  "Auth": {
+    "username": "Пайдаланушы аты",
+    "emailOrPhone": "e-mail немесе телефон (мысалы +77011234567)",
+    "identityPlaceholder": "Пайдаланушы аты / e-mail / телефон =77...",
+    "password": "Құпия сөз",
+    "showPassword": "Құпия сөзді көрсету",
+    "hidePassword": "Құпия сөзді жасыру",
+    "forgotPassword": "Құпия сөзді ұмыттыңыз ба?",
+    "signInWithGoogle": "Gmail арқылы кіру",
+    "signUp": "Тіркелу",
+    "signIn": "Кіру",
+    "haveAccount": "Тіркелгіңіз бар ма?",
+    "noAccount": "Тіркелгі жоқ па?",
+    "resetPassword": "Құпия сөзді қалпына келтіру",
+    "newPassword": "Жаңа құпия сөз",
+    "confirmPassword": "Жаңа құпия сөзді растау",
+    "passwordResetSuccess": "Құпия сөз өзгертілді. Енді кіре аласыз.",
+    "resetLinkSent": "Егер тіркелгі бар болса, қалпына келтіру сілтемесін поштаға немесе телефонға жібердік.",
+    "resetHelp": "E-mail немесе телефон енгізіңіз. Қалпына келтіру сілтемесін немесе нұсқаулық жібереміз.",
+    "submitting": "Жіберілуде…",
+    "loggingIn": "Кіруде…",
+    "sending": "Жіберілуде…"
+  },
+  "Errors": {
+    "notFoundTitle": "Бет табылмады",
+    "notFoundMessage": "Сұралған бет жоқ.",
+    "loadMessagesFailed": "Тіл хабарламаларын жүктеу мүмкін болмады",
+    "Auth": {
+      "requiredFields": "Барлық қажетті өрістерді толтырыңыз.",
+      "invalidCredentials": "Логин немесе құпия сөз қате.",
+      "emailAlreadyExists": "Бұл e-mail тіркелген.",
+      "phoneAlreadyExists": "Бұл телефон тіркелген.",
+      "passwordTooShort": "Құпия сөз кемінде 6 таңба болуы керек.",
+      "passwordMismatch": "Құпия сөздер сәйкес емес.",
+      "badToken": "Қалпына келтіру сілтемесі жарамсыз немесе жоқ.",
+      "tokenExpired": "Қалпына келтіру сілтемесінің мерзімі өтті.",
+      "tokenUsed": "Қалпына келтіру сілтемесі бұрын қолданылған.",
+      "unknownError": "Қате орын алды. Кейінірек қайталаңыз."
+    }
+  },
+  "Profile": {
+    "title": "Менің профилім",
+    "edit": "Өңдеу",
+    "back": "Артқа",
+    "uid": "UID",
+    "createdAt": "Құрылған",
+    "updatedAt": "Жаңартылған",
+    "editTitle": "Профильді өңдеу",
+    "labels": {
+      "username": "Пайдаланушы аты",
+      "phone": "Телефон",
+      "avatarUrl": "Аватар сілтемесі"
+    },
+    "placeholders": {
+      "username": "мысалы, Yerzhan",
+      "phone": "+7701...",
+      "avatarUrl": "https://example.com/avatar.jpg"
+    },
+    "tips": {
+      "avatar": "Қазір сурет сілтемесін (URL) қоя аласыз. Кейін жүктеуді қосамыз."
+    },
+    "buttons": {
+      "save": "Сақтау",
+      "saving": "Сақталуда…",
+      "cancel": "Болдырмау"
+    },
+    "errors": {
+      "phoneExists": "Бұл телефон бұрыннан қолданылуда.",
+      "emailExists": "Бұл e-mail бұрыннан қолданылуда.",
+      "invalidUsername": "Пайдаланушы аты бос болмауы тиіс.",
+      "saveFailed": "Өзгерістерді сақтай алмадық. Қайта көріңіз."
+    }
+  }
+}

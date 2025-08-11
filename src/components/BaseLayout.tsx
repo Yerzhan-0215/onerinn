@@ -4,29 +4,35 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import BackgroundLogo from './BackgroundLogo'; // 添加背景图
 
 export default function BaseLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  // 判断是否是首页（支持多语言路径）
-  const isHomePage =
-    pathname === '/' ||
-    pathname === '/ru' ||
-    pathname === '/kk' ||
-    pathname === '/en' ||
-    pathname === '/zh';
+  // ✅ 路径判断，避免 pathname 为 null 报错
+  const homePaths = ['/', '/ru', '/kk', '/en', '/zh'];
+  const isHomePage = pathname !== null && homePaths.includes(pathname);
 
   return (
-    <div className="relative min-h-screen flex flex-col overflow-x-hidden">
-      {/* 全站统一导航栏 */}
-      <Navbar />
+    <div className="relative flex flex-col min-h-screen overflow-x-hidden">
+      {/* 背景图层（仅主页显示） */}
+      {isHomePage && (
+        <div className="absolute inset-0 z-0">
+          <BackgroundLogo />
+        </div>
+      )}
 
-      {/* 页面主体内容（首页无内边距，其它页有 pt+pb） */}
-      <main className={`flex-grow ${isHomePage ? '' : 'pt-6 pb-10 px-4'}`}>
-        {children}
+      {/* 导航栏 */}
+      <div className="relative z-10">
+        <Navbar />
+      </div>
+
+      {/* 主体内容 */}
+      <main className={`relative z-10 flex-grow flex justify-center ${isHomePage ? '' : 'pt-6 pb-10 px-4'}`}>
+        <div className="w-full max-w-5xl">{children}</div>
       </main>
 
-      {/* 页面底部版权信息 */}
+      {/* 页脚 */}
       <Footer />
     </div>
   );

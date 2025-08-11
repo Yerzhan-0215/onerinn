@@ -1,0 +1,98 @@
+{
+  "Meta": {
+    "homeTitle": "Onerinn — 艺术与租赁"
+  },
+  "Home": {
+    "welcomeTitle": "欢迎来到 Onerinn！",
+    "welcomeSubtitle": "开启电子产品租赁与艺术品展示的奇妙旅程！",
+    "searchPlaceholder": "搜索：电子设备或艺术品",
+    "ctaExploreArt": "艺术品",
+    "ctaBrowseRentals": "租赁"
+  },
+  "Navbar": {
+    "artworks": "艺术品",
+    "rentals": "租赁",
+    "getApp": "安装应用",
+    "faq": "常见问题",
+    "login": "登录",
+    "register": "注册",
+    "profile": "我的资料",
+    "editProfile": "编辑资料",
+    "edit": "编辑",
+    "logout": "退出登录",
+    "language": "语言"
+  },
+  "Auth": {
+    "username": "用户名",
+    "emailOrPhone": "电子邮箱或电话（例如 +77011234567）",
+    "identityPlaceholder": "用户名 / 邮箱 / 电话 +77...",
+    "password": "密码",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码",
+    "forgotPassword": "忘记密码？",
+    "signInWithGoogle": "通过 Gmail 登录",
+    "signUp": "注册",
+    "signIn": "登录",
+    "haveAccount": "已有账号？",
+    "noAccount": "没有账号？",
+    "resetPassword": "重置密码",
+    "newPassword": "新密码",
+    "confirmPassword": "确认新密码",
+    "passwordResetSuccess": "密码已重置，请重新登录。",
+    "resetLinkSent": "如果账号存在，我们已将重置链接发送至您的邮箱或电话。",
+    "resetHelp": "请输入电子邮箱或电话，我们会发送重置链接或操作说明。",
+    "submitting": "提交中…",
+    "loggingIn": "登录中…",
+    "sending": "发送中…"
+  },
+  "Errors": {
+    "notFoundTitle": "页面未找到",
+    "notFoundMessage": "请求的页面不存在。",
+    "loadMessagesFailed": "加载语言文件失败",
+    "Auth": {
+      "requiredFields": "请填写所有必填项。",
+      "invalidCredentials": "用户名或密码错误。",
+      "emailAlreadyExists": "该邮箱已注册。",
+      "phoneAlreadyExists": "该电话已注册。",
+      "passwordTooShort": "密码长度至少为 6 个字符。",
+      "passwordMismatch": "两次输入的密码不一致。",
+      "badToken": "重置链接无效或缺失。",
+      "tokenExpired": "重置链接已过期。",
+      "tokenUsed": "重置链接已被使用。",
+      "unknownError": "发生错误，请稍后再试。"
+    }
+  },
+  "Profile": {
+    "title": "我的资料",
+    "edit": "编辑",
+    "back": "返回",
+    "uid": "UID",
+    "createdAt": "创建时间",
+    "updatedAt": "更新时间",
+    "editTitle": "编辑资料",
+    "labels": {
+      "username": "用户名",
+      "phone": "电话",
+      "avatarUrl": "头像链接"
+    },
+    "placeholders": {
+      "username": "例如：Yerzhan",
+      "phone": "+7701...",
+      "avatarUrl": "https://example.com/avatar.jpg"
+    },
+    "tips": {
+      "avatar": "目前支持粘贴图片 URL，后续会加入上传功能。"
+    },
+    "buttons": {
+      "save": "保存",
+      "saving": "保存中…",
+      "cancel": "取消"
+    },
+    "errors": {
+      "phoneExists": "该电话已被使用。",
+      "emailExists": "该邮箱已被使用。",
+      "invalidUsername": "用户名不能为空。",
+      "saveFailed": "保存失败，请重试。"
+    }
+  }
+}

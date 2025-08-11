@@ -1,20 +1,10 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import createNextIntlPlugin from 'next-intl/plugin';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts'); // ✅ 正确路径！
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
+export default withNextIntl({
+  reactStrictMode: true,
+  experimental: {
+    serverActions: true // 如果你用到了可以保留
+  }
 });
-
-<<<<<<< HEAD
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
-];
-=======
-const eslintConfig = [...compat.extends("next/core-web-vitals")];
->>>>>>> 9ab25534740f28f708c6913260258c11441fdf4e
-
-export default eslintConfig;

@@ -1,0 +1,98 @@
+{
+  "Meta": {
+    "homeTitle": "Onerinn — Art and Rentals"
+  },
+  "Home": {
+    "welcomeTitle": "Welcome to Onerinn!",
+    "welcomeSubtitle": "A wonderful journey into electronics rentals and art exhibitions!",
+    "searchPlaceholder": "Search: electronic devices or artworks",
+    "ctaExploreArt": "Artworks",
+    "ctaBrowseRentals": "Rentals"
+  },
+  "Navbar": {
+    "artworks": "Artworks",
+    "rentals": "Rentals",
+    "getApp": "Get App",
+    "faq": "FAQ",
+    "login": "Login",
+    "register": "Register",
+    "profile": "My Profile",
+    "editProfile": "Edit Profile",
+    "edit": "Edit",
+    "logout": "Logout",
+    "language": "Language"
+  },
+  "Auth": {
+    "username": "Username",
+    "emailOrPhone": "e-mail or phone (e.g. +77011234567)",
+    "identityPlaceholder": "Username / e-mail / phone =77...",
+    "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "forgotPassword": "Forgot password?",
+    "signInWithGoogle": "Sign in with Gmail",
+    "signUp": "Sign Up",
+    "signIn": "Sign In",
+    "haveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?",
+    "resetPassword": "Reset Password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "passwordResetSuccess": "Password has been reset. You can now log in.",
+    "resetLinkSent": "If the account exists, we have sent a reset link to your email or phone.",
+    "resetHelp": "Enter your e-mail or phone. We will send a reset link or instructions.",
+    "submitting": "Submitting…",
+    "loggingIn": "Logging in…",
+    "sending": "Sending…"
+  },
+  "Errors": {
+    "notFoundTitle": "Page not found",
+    "notFoundMessage": "The requested page does not exist.",
+    "loadMessagesFailed": "Failed to load language messages",
+    "Auth": {
+      "requiredFields": "Please fill in all required fields.",
+      "invalidCredentials": "Invalid login or password.",
+      "emailAlreadyExists": "This e-mail is already registered.",
+      "phoneAlreadyExists": "This phone is already registered.",
+      "passwordTooShort": "Password must be at least 6 characters long.",
+      "passwordMismatch": "Passwords do not match.",
+      "badToken": "Invalid or missing reset link.",
+      "tokenExpired": "The reset link has expired.",
+      "tokenUsed": "The reset link has already been used.",
+      "unknownError": "An error occurred. Please try again later."
+    }
+  },
+  "Profile": {
+    "title": "My Profile",
+    "edit": "Edit",
+    "back": "Back",
+    "uid": "UID",
+    "createdAt": "Created",
+    "updatedAt": "Updated",
+    "editTitle": "Edit Profile",
+    "labels": {
+      "username": "Username",
+      "phone": "Phone",
+      "avatarUrl": "Avatar URL"
+    },
+    "placeholders": {
+      "username": "e.g., Yerzhan",
+      "phone": "+7701...",
+      "avatarUrl": "https://example.com/avatar.jpg"
+    },
+    "tips": {
+      "avatar": "You can paste an image URL for now. We'll add upload later."
+    },
+    "buttons": {
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "phoneExists": "This phone is already in use.",
+      "emailExists": "This e-mail is already in use.",
+      "invalidUsername": "Username cannot be empty.",
+      "saveFailed": "Failed to save changes. Please try again."
+    }
+  }
+}

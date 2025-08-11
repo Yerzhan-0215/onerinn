@@ -3,7 +3,7 @@ import background from '/public/images/onerinn-background.png';
 
 const BackgroundLogo = () => {
   return (
-    <div className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none z-0">
+    <div className="fixed top-0 left-0 right-0 bottom-0 overflow-hidden z-0 pointer-events-none">
       <Image
         src={background}
         alt="Onerinn Background"

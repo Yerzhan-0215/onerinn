@@ -1,42 +1,34 @@
+// src/app/api/reset-password/route.ts
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcrypt';
+import { verifyAndUseToken } from '@/lib/resetTokens';
 
 export async function POST(req: Request) {
   try {
     const { token, password } = await req.json();
 
-    if (!token || !password) {
-      return NextResponse.json({ error: 'Недопустимые данные' }, { status: 400 });
+    if (!token || typeof token !== 'string' || !password || typeof password !== 'string') {
+      return NextResponse.json({ ok: false, code: 'BAD_REQUEST' }, { status: 400 });
+    }
+    if (password.length < 6) {
+      return NextResponse.json({ ok: false, code: 'PASSWORD_TOO_SHORT' }, { status: 400 });
     }
 
-    // 查找重置 token
-    const resetToken = await prisma.passwordResetToken.findUnique({
-      where: { token },
-      include: { user: true },
-    });
-
-    if (!resetToken || resetToken.expiresAt < new Date()) {
-      return NextResponse.json({ error: 'Недействительный или просроченный токен' }, { status: 400 });
+    const result = verifyAndUseToken(token);
+    if (!result.ok) {
+      // NOT_FOUND / USED / EXPIRED
+      return NextResponse.json({ ok: false, code: result.reason }, { status: 400 });
     }
 
-    // 哈希新密码
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const emailOrPhone = result.emailOrPhone;
 
-    // 更新用户密码
-    await prisma.user.update({
-      where: { id: resetToken.userId },
-      data: { password: hashedPassword },
-    });
+    // TODO: 在这里真正重置密码（查用户并设置新密码哈希）
+    // if (looksLikeEmail(emailOrPhone)) { find by email } else { find by phone }
+    // await db.user.update({ where: ..., data: { passwordHash: hash(password) } });
 
-    // 删除已用 token
-    await prisma.passwordResetToken.delete({
-      where: { id: resetToken.id },
-    });
+    console.log('[reset-password] set new password for:', emailOrPhone);
 
-    return NextResponse.json({ message: 'Пароль успешно обновлен' });
-  } catch (error) {
-    console.error('Ошибка сброса пароля:', error);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    return NextResponse.json({ ok: false, code: 'UNKNOWN' }, { status: 500 });
   }
 }
