@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import prisma from '@/lib/prisma'; // ✅ 仅用共享单例
+import prisma from '@/lib/prisma'; // ✅ 共享单例
 
 const COOKIE_NAME = 'onerinn_session';
 const isProd = process.env.NODE_ENV === 'production';
@@ -14,6 +14,7 @@ function json(data: any, init?: number | ResponseInit) {
   return NextResponse.json(data, resInit);
 }
 
+// —— 助手 —— //
 function isEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
@@ -29,6 +30,7 @@ function normalizePhone(input: string) {
   return '+' + digits;
 }
 
+// 明确只允许 POST 登录
 export async function GET() {
   return new NextResponse('Method Not Allowed', {
     status: 405,
@@ -38,9 +40,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const debug: Record<string, any> = {};
+
   try {
     const body = await req.json().catch(() => ({}));
-    const identity: string | undefined =
+
+    // 登录时：允许用 email / phone / username / login 等任一字段
+    const rawIdentity: string | undefined =
       body.identity ??
       body.emailOrPhoneOrUsername ??
       body.emailOrPhone ??
@@ -50,72 +55,108 @@ export async function POST(req: Request) {
 
     const password: string | undefined = body.password;
 
-    if (!identity || !password) {
+    if (!rawIdentity || !password) {
       return json({ code: 'REQUIRED_FIELDS' }, 400);
     }
 
+    if (password.length < 6) {
+      // 保留你原来的限制 & 错误码
+      return json({ code: 'PASSWORD_TOO_SHORT' }, 400);
+    }
+
+    const identity = rawIdentity.trim();
     debug.identity = identity;
 
-    // —— 分步查库（email → phone → username）——
+    // —— 1) 按邮箱 / 手机 / 用户名 分步查库 —— //
     let user: any = null;
 
+    // 1. email
     if (isEmail(identity)) {
-      user = await prisma.user.findFirst({ where: { email: identity } });
+      const email = identity.toLowerCase(); // ✅ 统一小写
+      user = await prisma.user.findFirst({ where: { email } });
       debug.step = 'email';
     }
 
+    // 2. phone
     if (!user && looksLikePhone(identity)) {
       const raw = identity;
       const compact = identity.replace(/[\s()-]/g, '');
       const normalized = normalizePhone(identity);
       user = await prisma.user.findFirst({
-        where: { OR: [{ phone: normalized }, { phone: compact }, { phone: raw }] },
+        where: {
+          OR: [
+            { phone: normalized },
+            { phone: compact },
+            { phone: raw },
+          ],
+        },
       });
       debug.step = 'phone';
     }
 
+    // 3. username (case-insensitive)
     if (!user) {
-      // 仅当前两种都没命中时再尝试用户名
       try {
         user = await prisma.user.findFirst({
-          where: { username: { equals: identity, mode: 'insensitive' } },
+          where: {
+            username: {
+              equals: identity,
+              mode: 'insensitive',
+            },
+          },
         });
         debug.step = 'username';
       } catch (e) {
-        // 若模型没有 username 字段，这里不影响整体流程
         debug.usernameQueryError = (e as Error).message;
       }
+    }
+
+    // ✅ 新增：如果账号存在并且已被管理员封禁，直接拒绝登录
+    if (user && user.isBlocked) {
+      return json(
+        {
+          code: 'BLOCKED',
+          message:
+            'Ваш аккаунт заблокирован администратором Onerinn. Если вы считаете, что это ошибка, свяжитесь со службой поддержки.',
+        },
+        403,
+      );
     }
 
     if (!user || !user.password) {
       return json({ code: 'INVALID_CREDENTIALS' }, 401);
     }
 
-    // —— 校验密码 —— //
+    // —— 2) 校验密码 —— //
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) {
       return json({ code: 'INVALID_CREDENTIALS' }, 401);
     }
 
-    // —— 签发 JWT —— //
+    // —— 3) 生成 JWT + 设置 Cookie —— //
     const secret = process.env.JWT_SECRET;
     if (!secret) {
       return json({ code: 'SERVER_MISCONFIGURED' }, 500);
     }
 
-    const token = jwt.sign(
-      {
-        uid: user.id,
-        email: user.email ?? null,
-        phone: user.phone ?? null,
-        username: user.username ?? null,
-        avatarUrl: user.avatarUrl ?? null,
-      },
-      secret,
-      { expiresIn: '7d' }
+    // ✅ payload 里增加 userId，不影响现有 uid
+    const payload = {
+      uid: user.id,
+      userId: user.id,
+      email: user.email ?? null,
+      phone: user.phone ?? null,
+      username: user.username ?? null,
+      avatarUrl: user.avatarUrl ?? null,
+    };
+
+    const token = jwt.sign(payload, secret, { expiresIn: '7d' });
+
+    const res = json(
+      { ok: true, ...(isProd ? {} : { debug }) },
+      200,
     );
 
-    const res = json({ ok: true, ...(isProd ? {} : { debug }) }, 200);
+    // 1) 原来的 session token（给 /api/me 使用）
     res.cookies.set(COOKIE_NAME, token, {
       httpOnly: true,
       sameSite: 'lax',
@@ -123,12 +164,24 @@ export async function POST(req: Request) {
       path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 天
     });
+
+    // 2) 新增：写入 userId，给 /api/profile/verification 等使用
+    res.cookies.set('userId', String(user.id), {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: isProd,
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 天
+    });
+
     return res;
   } catch (e) {
     console.error('Login error:', e);
     return json(
-      isProd ? { code: 'UNKNOWN_ERROR' } : { code: 'UNKNOWN_ERROR', error: String(e) },
-      500
+      isProd
+        ? { code: 'UNKNOWN_ERROR' }
+        : { code: 'UNKNOWN_ERROR', error: String(e), debug },
+      500,
     );
   }
 }

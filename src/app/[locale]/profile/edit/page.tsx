@@ -1,4 +1,3 @@
-// src/app/[locale]/profile/edit/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -22,11 +21,13 @@ export default function EditProfilePage() {
   const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
   const locale = useLocale();
+  // 修复：模板字符串写法
   const prefix = locale === 'en' ? '' : `/${locale}`;
 
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function EditProfilePage() {
           router.replace(`${prefix}/login`);
           return;
         }
+
         setUser(data.user);
         setUsername(data.user.username ?? '');
         setPhone(data.user.phone ?? '');
@@ -55,22 +57,26 @@ export default function EditProfilePage() {
         if (mounted) setLoading(false);
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [router, prefix]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSaving(true);
+
     try {
+      // 兼容你现有的 /api/me 更新接口
       const res = await fetch('/api/me', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: username.trim(),
           phone: phone.trim() || null,
-          avatarUrl: avatarUrl.trim() || null
-        })
+          avatarUrl: avatarUrl.trim() || null,
+        }),
       });
 
       if (res.ok) {
@@ -80,6 +86,7 @@ export default function EditProfilePage() {
 
       const data = await res.json().catch(() => ({} as any));
       const code = data?.code as string | undefined;
+
       if (code === 'PHONE_EXISTS') setError(t('errors.phoneExists'));
       else if (code === 'EMAIL_EXISTS') setError(t('errors.emailExists'));
       else if (code === 'INVALID_USERNAME') setError(t('errors.invalidUsername'));
@@ -115,10 +122,7 @@ export default function EditProfilePage() {
 
   return (
     <div className="max-w-xl mx-auto p-6">
-      <form
-        onSubmit={handleSave}
-        className="bg-white/80 backdrop-blur-sm rounded-xl shadow p-6 space-y-4"
-      >
+      <form onSubmit={handleSave} className="bg-white/80 backdrop-blur-sm rounded-xl shadow p-6 space-y-4">
         <h1 className="text-xl font-semibold">{t('editTitle')}</h1>
 
         {error && (
@@ -128,14 +132,8 @@ export default function EditProfilePage() {
         )}
 
         <div className="flex items-center gap-4">
-          <Avatar
-            name={username || user.email || 'User'}
-            src={avatarUrl || undefined}
-            size={64}
-          />
-          <div className="text-sm text-gray-500">
-            {t('tips.avatar')}
-          </div>
+          <Avatar name={username || user.email || 'User'} src={avatarUrl || undefined} size={64} />
+          <div className="text-sm text-gray-500">{t('tips.avatar')}</div>
         </div>
 
         <div>

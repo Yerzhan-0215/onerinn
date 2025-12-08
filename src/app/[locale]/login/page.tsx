@@ -7,12 +7,15 @@ import Link from 'next/link';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import GoogleSignInButton from '@/components/GoogleSignInButton';
 import AuthCard from '@/components/AuthCard';
+import { useSession } from 'next-auth/react'; // ✅ 新增
 
 export default function LoginPage() {
   const t = useTranslations('Auth');
   const tErr = useTranslations('Errors.Auth');
   const locale = useLocale();
   const router = useRouter();
+
+  const { status } = useSession(); // ✅ 新增: 'loading' | 'authenticated' | 'unauthenticated'
 
   const [identity, setIdentity] = useState('');
   const [password, setPassword] = useState('');
@@ -21,6 +24,18 @@ export default function LoginPage() {
   const [err, setErr] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // ✅ 已登录则自动跳回对应语言首页
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace(`/${locale}`);
+    }
+  }, [status, router, locale]);
+
+  // 防止重定向前闪烁页面
+  if (status === 'authenticated') {
+    return null;
+  }
 
   useEffect(() => {
     inputRef.current?.focus();

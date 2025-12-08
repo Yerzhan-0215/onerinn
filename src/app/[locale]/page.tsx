@@ -27,7 +27,12 @@ export default async function LocaleHomePage({ params }: PageProps) {
   await params;
 
   return (
-    <main className="min-h-[70vh] pt-4 sm:pt-6">
+    <main
+      className="
+        min-h-[calc(100dvh-var(--site-header-h,64px)-var(--site-footer-h,56px))]
+        pt-4 sm:pt-6
+      "
+    >
       <LoaderGate minMs={1200}>
         <HomeHero />
       </LoaderGate>

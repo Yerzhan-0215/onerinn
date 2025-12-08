@@ -1,14 +1,42 @@
 @import "tailwindcss";
 
-/* ✅ 颜色变量定义 */
+/* =========================
+   Loading 特殊处理
+   - loading 期间禁止 main 以及 html/body 的纵向滚动
+   - 防回弹/溢出
+========================= */
+@layer base {
+  /* main 层禁止滚动（路由 loading 时才生效） */
+  main:has(.__route-loading) {
+    overflow-y: hidden !important;
+  }
+
+  /* html/body 根层也禁止滚动，防止根滚动条闪现 */
+  html:has(.__route-loading),
+  body:has(.__route-loading) {
+    overflow-y: hidden !important;
+  }
+
+  /* 保险：loading 根容器防 overscroll 回弹 */
+  .__route-loading {
+    overscroll-behavior: contain;
+  }
+}
+
+/* =========================
+   颜色 & 布局变量
+========================= */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --site-header-h: 64px;
+  --site-footer-h: 56px;
+
+  /* 回退用：计算滚动条宽度（100vw - 100%） */
+  --sbw: calc(100vw - 100%);
 }
 
-/* ✅ 自定义字体变量（如有） */
-
-/* ✅ 深色模式支持 */
+/* 深色模式变量 */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -16,38 +44,300 @@
   }
 }
 
-/* ✅ 强制不出现滚动条（无横向也无纵向） */
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;         /* 禁止横向与纵向滚动条 */
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* 大屏 Header 更高 */
+@media (min-width: 1024px) {
+  :root {
+    --site-header-h: 72px;
+  }
 }
 
-/* ✅ Tailwind 默认 box-sizing 控制 */
-*, *::before, *::after {
-  box-sizing: inherit;
+/* =========================
+   基础层：Tailwind 风格全局基类
+========================= */
+@layer base {
+  html {
+    @apply h-full w-full;
+    overflow-y: auto;
+    scrollbar-gutter: stable both-edges;
+    box-sizing: border-box;
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  body {
+    @apply min-h-dvh w-full overflow-x-hidden;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: inherit;
+  }
 }
 
-/* ✅ 自定义动画延迟（如用于 logo 背景） */
+/* 滚动条稳定性增强 */
+.with-sbw {
+  padding-inline-end: var(--sbw);
+}
+
+@supports (scrollbar-gutter: stable) {
+  .with-sbw {
+    padding-inline-end: 0;
+  }
+}
+
+/* 禁用横向滚动 */
+html,
+body {
+  overflow-x: hidden;
+}
+
+/* =========================
+   自定义动画
+========================= */
 .anim-delay-1500 {
   animation-delay: 1.5s;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 0.1; /* 半透明 */
-  }
+  from { opacity: 0; }
+  to { opacity: 0.1; }
 }
 
 .animate-fadeIn {
   animation: fadeIn 2s ease-in-out forwards;
+}
+
+/* 首页导航 / 页脚淡入 */
+@keyframes fadeInNavSoft {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeInFooterSoft {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.fade-in-nav-soft {
+  opacity: 0;
+  animation: fadeInNavSoft 2.5s ease-out 0.5s forwards;
+}
+
+.fade-in-footer-soft {
+  opacity: 0;
+  animation: fadeInFooterSoft 2.5s ease-out 0.5s forwards;
+}
+
+/* 去掉 Chrome / Edge 滚动条端点三角 */
+@supports selector(::-webkit-scrollbar) {
+  *::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
+
+/* Footer 细线去掉 */
+#footer-fixed-overlay,
+#footer-fixed-overlay-inner,
+footer[data-footer="mounted"] {
+  border-top: 0 !important;
+  box-shadow: none !important;
+}
+
+#footer-fixed-overlay::before,
+#footer-fixed-overlay::after,
+#footer-fixed-overlay-inner::before,
+#footer-fixed-overlay-inner::after,
+footer[data-footer="mounted"]::before,
+footer[data-footer="mounted"]::after {
+  content: none !important;
+}
+
+/* Loading 期间布局修正 */
+@layer base {
+  html:has(.__route-loading) .layout-shell {
+    padding-top: 0 !important;
+    min-height: 100dvh !important;
+  }
+
+  html:has(.__route-loading) .base-layout-shell {
+    min-height: 100dvh !important;
+  }
+}
+
+/* 避免双滚动条 */
+@layer components {
+  main {
+    overflow-y: visible !important;
+  }
+
+  body [class*="overflow-y-auto"],
+  body [class*="overflow-y-scroll"] {
+    overflow-y: visible !important;
+  }
+}
+
+/* 聊天窗口自身滚动 */
+@layer components {
+  body .onerinn-chat-messages {
+    overflow-y: auto !important;
+  }
+}
+
+/* 下拉框默认样式 */
+@layer components {
+  .onerinn-select {
+    @apply rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm shadow-sm hover:bg-gray-50;
+  }
+
+  .onerinn-select-full {
+    @apply w-full rounded-full border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm hover:bg-gray-50;
+  }
+}
+
+/* =========================
+   按钮系统（保持原样）
+========================= */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg font-medium
+           transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-offset-1
+           disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+  }
+
+  .btn-secondary {
+    @apply border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 focus:ring-gray-400;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-300;
+  }
+
+  .btn-sm { @apply h-8 px-3 text-xs; }
+  .btn-md { @apply h-10 px-4 text-sm; }
+  .btn-lg { @apply h-11 px-5 text-base; }
+}
+
+/* ======================================================
+   ★ 新增：发布表单 `.listing-form` 统一样式（精准加法）
+   ———— 不影响网站其他部分
+====================================================== */
+@layer components {
+  /* 所有输入字段降低高度、更柔和 */
+  .listing-form input,
+  .listing-form select,
+  .listing-form textarea {
+    @apply rounded-lg border border-gray-300 px-3 py-1.5 text-sm;
+  }
+
+  /* 发布表单：更柔和的 focus 效果 */
+  .listing-form input:focus,
+  .listing-form select:focus,
+  .listing-form textarea:focus {
+    @apply outline-none ring-1 ring-black/5 border-gray-400;
+  }
+
+  /* 发布表单下拉 full 样式（不影响其它页面） */
+  .listing-form .onerinn-select-full {
+    @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm shadow-sm hover:bg-gray-50;
+  }
+}
+
+/* ======================================================
+   发布页下拉框：去掉浏览器自带箭头和分隔竖线，
+   换成更柔和的小箭头（只作用于 .listing-form）
+====================================================== */
+@layer components {
+  .listing-form select {
+    /* 去掉各浏览器默认的 select 外观（包括那条竖线和箭头） */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    /* 自己画一个淡灰色的小箭头 */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 12px 8px;
+
+    /* 给箭头留出一点空间，防止文字贴到最右侧 */
+    padding-right: 2.1rem;
+  }
+
+  .listing-form select:focus {
+    /* 保持和 input 一样的 focus 风格 */
+    @apply outline-none ring-1 ring-black/5 border-gray-400;
+  }
+}
+
+/* ======================================================
+   ★ 新增：数字输入去掉右侧小三角（仅对发布页生效）
+====================================================== */
+
+/* Chrome / Edge */
+.listing-form input[type='number']::-webkit-inner-spin-button,
+.listing-form input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox + 标准 */
+.listing-form input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* ======================================================
+   ★ 新增：按钮 hover 显示“小手”，用于 Сохранить / Опубликовать
+====================================================== */
+.cursor-pointer,
+button.btn,
+button[type="submit"],
+button[type="button"] {
+  cursor: pointer !important;
+}
+
+/* ======================================================
+   ★ 新增：发布表单下拉框增强版
+   —— 去掉系统默认箭头 & 双竖线，统一为柔和小箭头
+   —— 只覆盖 .listing-form 内部的 <select>
+====================================================== */
+@layer components {
+  .listing-form select {
+    /* 再次明确隐藏默认外观，覆盖上面的基础版本 */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    /* 保证背景还是白色（和当前设计统一） */
+    background-color: #ffffff;
+
+    /* 更柔和的小箭头（和语言菜单风格接近） */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%239CA3AF' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 0.7rem 0.7rem;
+
+    /* 右侧为箭头预留空间，避免文字挤在最右边 */
+    padding-right: 2.5rem;
+  }
+
+  /* 兼容旧版 IE / Edge 的默认箭头 */
+  .listing-form select::-ms-expand {
+    display: none;
+  }
 }

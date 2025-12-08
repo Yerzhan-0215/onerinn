@@ -5,18 +5,22 @@ export default function Loading() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-white">
       <img
         src="/logo.png"
-        alt="Loading..."
-        className="w-60 h-60 animate-pulse transition-transform duration-700 ease-in-out transform scale-100"
+        alt="Onerinn Logo"
+        className="w-60 h-60 animate-pulse transition-transform duration-700 ease-in-out"
       />
-      <p className="mt-4 text-xl text-gray-600 animate-fade-in">
-        Loading Onerinn...
+
+      {/* 标题与副标题：黑色、同一字号、同一字体粗细 */}
+      <h1 className="mt-3 text-3xl font-medium text-black animate-fade-in">
+        Onerinn
+      </h1>
+      <p className="mt-2 text-3xl font-medium text-black animate-fade-in">
+        loading your creative universe...
       </p>
 
       <style jsx>{`
         .animate-fade-in {
           animation: fadeIn 1.2s ease-in-out forwards;
         }
-
         @keyframes fadeIn {
           from {
             opacity: 0;

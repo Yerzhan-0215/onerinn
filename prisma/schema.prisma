@@ -7,22 +7,429 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(uuid())
-  username  String
-  email     String?  @unique
-  phone     String?  @unique
-  password  String
+//// =======================
+// 角色枚举（新增）
+// =======================
+enum UserRole {
+  USER
+  ADMIN
+}
 
-  avatarUrl String?               // 头像 URL（可为空）
+// ✅ 新增：卖家验证状态（只增加，不改动你已有的 VerificationStatus）
+enum SellerVerificationStatus {
+  PENDING     // 已提交，等待管理员审核（也作为“未通过审核/未开始”的默认状态）
+  APPROVED    // 审核通过
+  REJECTED    // 审核拒绝
+}
+
+model User {
+  id       String  @id @default(uuid())
+  // 基础登录字段（沿用你原有约束）
+  username String  @unique // 建议设为唯一，便于 @username 展示与跳转
+  email    String? @unique
+  phone    String? @unique
+  password String // bcrypt 哈希
+
+  // 个人资料扩展
+  name      String?
+  avatarUrl String? // 头像 URL
+  bio       String? @db.Text
+  locale    String  @default("ru") // "kk" | "ru" | "zh" | "en"
+  currency  String? @default("KZT")
+
+  // ✅ 新增：对外展示的联系方式（用于作品详情页“联系卖家”）
+  contactPhone    String?   // 对外展示的电话
+  contactWhatsApp String?   // WhatsApp 号码或链接
+  contactTelegram String?   // Telegram @username（可不带 @）
+  contactNote     String?   // 联系偏好说明，例如“предпочитаю писать в WhatsApp”
+
+  // ✅ 新增：是否公开姓名（默认 false）
+  showName Boolean @default(false)
+
+  // ✅ 新增：用户角色（普通用户 / 管理员）
+  role UserRole @default(USER)
+
+  // ✅ 新增：统一的卖家验证状态（给前端「是否允许发布」使用）
+  sellerVerificationStatus SellerVerificationStatus @default(PENDING)
+
+  /// ✅ 新增：账号是否被封禁（给 Admin 后台用）
+  isBlocked Boolean @default(false)
+
+  // 审计字段
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now()) // 加默认值，迁移时可回填老数据
+  updatedAt DateTime @updatedAt
+
+  // 关系
+  artworks    Artwork[]
+  favorites   Favorite[]
+  rentalItems RentalItem[] // ✅ 用户发布的租赁电子产品
+
+  // 与卖家验证的一对一反向关联（可选）
+  verification UserVerification?
+
+  // ✅ 新增：简化版卖家验证（当前 /ru/profile/verify 使用）
+  sellerVerification SellerVerification?
+
+  // 卖家验证用到的证件与收款账户
+  documents     VerificationDocument[]
+  payoutAccount PayoutAccount?
+
+  // ✅ 新增：提现记录（与 PayoutRequest 一对多）
+  payoutRequests PayoutRequest[]
+}
+
+////////////////////////////////////////////////////////
+//  艺术品生命周期状态枚举（新增，不影响旧字段）
+////////////////////////////////////////////////////////
+enum ArtworkStatus {
+  ACTIVE // 正常展示
+  HIDDEN // 隐藏（用户或管理员手动下架）
+  SOLD   // 已出售
+  ARCHIVED // 归档
+}
+
+model Artwork {
+  id      String @id @default(uuid())
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id])
+
+  title  String
+  artist String? // 作者
+  style  String? // 风格
+  size   String? // 尺寸
+
+  price  Decimal @db.Decimal(10, 2)
+  status String  @default("draft") // "draft" | "published" —— 保留，兼容旧逻辑
+
+  /// ⭐⭐⭐ 业务线：art / electronic（用于区分艺术品和电子产品）
+  biz    String  @default("art") // art / electronic
+
+  // ▼ 可选信息字段（不影响旧数据与功能）
+  description String? @db.Text
+  category    String? // 如: painting/photo/sculpture...
+  condition   String? // new/used/like_new
+  quantity    Int?    @default(1)
+  coverUrl    String? // 首图 URL
+
+  // ★ 新增：作品所在城市和区（旧结构）
+  location String? // город, например: Алматы
+  district String? // район, например: Бостандыкский
+
+  // ★ 你之前已添加的：结构化位置（国家 / 城市 / 区）
+  location_country  String?
+  location_city     String?
+  location_district String?
+
+  // =========================
+  // 新增：可存储结构化 JSON 字段（规格、价格结构、取得方式）
+  // 这些字段允许前端传入对象（Prisma 的 Json 类型）
+  // =========================
+  specs       Json?   // 例如: { dimensions_cm: {...}, weight_kg: ... } 
+  pricing     Json?   // 例如: { kind: 'rental', rental: { unit:'day', amount: 1000 }, sale: {...} }
+  acquisition Json?   // 例如: { pickup: {...}, courier: {...}, shipping: {...}, meetup: {...} }
+
+  // 媒体关联
+  media Media[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  favorites Favorite[]
+
+  // =======================
+  // ✅ 新增：出售 / 租赁相关字段
+  // 只“增加”，不改变原有字段，避免影响现有功能
+  // =======================
+
+  /// 是否对外出售（用于 /artworks 页面）
+  forSale Boolean @default(true)
+
+  /// 出售价格（以 KZT 计），可选
+  /// 注意：你现有的 price(Decimal) 依然可用，这里是专门的 тенге 款项。
+  salePriceKzt Int?
+
+  /// 是否可出租
+  forRent Boolean @default(false)
+
+  /// 日租 / 周租 / 月租（KZT）
+  rentPerDayKzt   Int?
+  rentPerWeekKzt  Int?
+  rentPerMonthKzt Int?
+
+  /// 新增的生命周期状态（与旧 status 并存，后续可以逐步迁移）
+  lifecycleStatus ArtworkStatus @default(ACTIVE)
+
+  @@index([ownerId])
+}
+
+////////////////////////////////////////////////////////
+//  租赁商品状态枚举 & 电子产品租赁模型（新增）
+////////////////////////////////////////////////////////
+enum RentalStatus {
+  AVAILABLE // 可租
+  RESERVED  // 已预订（可选）
+  RENTED    // 租赁中
+  MAINTENANCE // 维护中
+  ARCHIVED  // 归档/下架
+}
+
+model RentalItem {
+  id      String @id @default(uuid())
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id])
+
+  // 基本信息
+  title       String // 名称，例如: "MacBook Pro 16”"
+  category    String? // 分类：ноутбук / телефон / камера ...
+  brand       String? // 品牌
+  modelName   String? // 型号（避免和 Prisma 的 model 关键字冲突）
+  description String? @db.Text
+  condition   String? // new / used / like_new 等等
+
+  // 价格 & 押金（以 KZT 计）
+  rentPerDayKzt   Int?
+  rentPerWeekKzt  Int?
+  rentPerMonthKzt Int?
+  depositKzt      Int? // 押金，可选
+
+  // 展示相关
+  coverUrl String? // 封面图
+  location String? // 城市/地区（例如: Алматы, Нур-Султан）
+  district String? // район, например: Бостандыкский
+  isActive Boolean      @default(true)
+  status   RentalStatus @default(AVAILABLE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+  @@index([status, isActive])
+}
+
+model Media {
+  id        String  @id @default(uuid())
+  artworkId String
+  artwork   Artwork @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+
+  url   String
+  type  String // "image" | "video"
+  order Int    @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([artworkId, type])
+}
+
+model Favorite {
+  id        String @id @default(uuid())
+  userId    String
+  artworkId String
+
+  user    User    @relation(fields: [userId], references: [id])
+  artwork Artwork @relation(fields: [artworkId], references: [id])
+
+  // 同一用户对同一作品仅可收藏一次
+  @@unique([userId, artworkId])
 }
 
 model PasswordResetToken {
   id        String   @id @default(uuid())
-  token     String   @unique
   email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // ✅ 建议索引 email 提高查询速度（当你查找用户时会更快）
+  @@index([email])
+}
+
+//// =======================
+// 卖家验证模型（在原有基础上“只增加不删除”）
+// =======================
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// 主体类型（个体/公司），用于 UI 切换
+enum SellerType {
+  INDIVIDUAL
+  COMPANY
+}
+
+model UserVerification {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  // 主体类型（默认个体，不影响旧数据）
+  sellerType SellerType @default(INDIVIDUAL)
+
+  // 卖家信息（兼容旧字段）
+  iinBin      String // INDIVIDUAL: ИИН; COMPANY: БИН
+  companyName String? // 公司名（若为个体户可为空）
+
+  // 个体姓名（个体时建议采集）；可空
+  fullName String?
+
+  // 地址（旧字段保留以兼容旧功能）
+  country    String?
+  region     String?
+  city       String?
+  address    String?
+  postalCode String?
+
+  // 公司专用地址（新增，不替代旧字段）
+  legalAddress  String? // юридический адрес
+  actualAddress String? // фактический адрес
+
+  // 行政区（可选）
+  district String?
+
+  // 联系方式
+  contactName String?
+  phone       String?
+  email       String?
+
+  // 审核状态
+  status VerificationStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//// =======================================
+// 卖家验证-证件 与 收款账户模型（保留原有并增强）
+// =======================================
+
+model VerificationDocument {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // 你原先是自由字符串；保留。如："passport" | "registration" | "charter" | "representative_id" | "other"
+  type String
+
+  // /uploads/verification/<filename>
+  url      String
+  filename String?
+
+  // 非必填扩展信息（向后兼容）
+  size     Int?
+  mimeType String?
+
+  uploadedAt DateTime @default(now())
+
+  @@index([userId, type])
+}
+
+//// ✅ 新增：账户类型（不影响旧数据；默认 IBAN）
+enum AccountType {
+  IBAN
+  CARD
+}
+
+model PayoutAccount {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  accountType     AccountType @default(IBAN) // ✅ 新增
+  bankName        String?
+  beneficiaryName String?
+  accountNumber   String? // IBAN 或 卡号（二选一）
+  bic             String? // БИК（IBAN 时可填）
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+/// =======================
+/// История выводов средств
+/// =======================
+
+model PayoutRequest {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  amount      Decimal   @db.Decimal(10, 2) // сколько пользователь просит вывести
+  status      String    @default("PENDING") // PENDING | APPROVED | REJECTED | PAID
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+
+  // Для удобства: зафиксируем на момент заявки куда выводим
+  beneficiaryName String?
+  accountNumber   String? // IBAN или карта на момент заявки
+  bankName        String?
+  bic             String?
+}
+
+
+/// ---------------------------
+/// Minimal Order model (added)
+/// ---------------------------
+model Order {
+  id         String   @id @default(uuid())
+  buyerId    String
+  sellerId   String?
+  artworkId  String?      // optional link to Artwork
+  amount     Decimal      @db.Decimal(10, 2)
+  currency   String       @default("KZT")
+  status     String       @default("PENDING") // PENDING | PAID | CANCELLED | REFUNDED
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  // NOTE: kept as scalar fields to avoid forcing changes in User/Artwork models.
+  // If you want explicit Prisma relations, we can add them later.
+
+  @@index([createdAt])
+  @@index([sellerId])
+}
+
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  role         String   @default("ADMIN")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+
+  sessions AdminSession[]
+}
+
+model AdminSession {
+  id        String   @id @default(cuid())
+  admin     Admin    @relation(fields: [adminId], references: [id])
+  adminId   String
   createdAt DateTime @default(now())
   expiresAt DateTime
+}
+
+// ✅ 新增：简化版 SellerVerification（只增加，不影响旧 UserVerification）
+model SellerVerification {
+  id        String   @id @default(uuid())
+
+  // 关联用户（一个用户一条记录）
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+
+  // 基础信息（使用你已有的 SellerType 枚举）
+  type         SellerType?              // INDIVIDUAL / COMPANY
+  iinOrBin     String?                  // ИИН 或 БИН
+  fullName     String?                  // 个人：ФИО
+  companyName  String?                  // 公司：Название компании
+
+  // 审核状态（与老的 VerificationStatus 并存，不冲突）
+  status       SellerVerificationStatus @default(PENDING)
+  // 管理员可以填写拒绝原因 （可选）
+  adminComment String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

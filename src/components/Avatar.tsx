@@ -1,21 +1,22 @@
 // src/components/Avatar.tsx
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 
 type AvatarProps = {
-  /** 用于生成首字母、tooltip 的显示名 */
+  /** 用于生成首字母（最多两位）与无障碍标签 */
   name: string;
-  /** 图片地址（可为空；为空或加载失败时回退到首字母） */
+  /** 图片地址（为空或加载失败时回退到首字母） */
   src?: string | null;
-  /** 像素尺寸；也可用 Tailwind 的 h-8 w-8 覆盖 */
+  /** 像素尺寸；也可用 Tailwind 的类名（例如 h-8 w-8）覆盖 */
   size?: number;
   /** 额外样式类 */
   className?: string;
-  /** 悬停时的提示文本；默认使用 name */
-  title?: string;
   /** 点击事件（例如跳转到 /profile） */
   onClick?: () => void;
+
+  /** @deprecated 为避免浏览器原生黑框 tooltip，已废弃 title */
+  // title?: string;
 };
 
 export default function Avatar({
@@ -23,8 +24,7 @@ export default function Avatar({
   src,
   size = 32,
   className = '',
-  title,
-  onClick
+  onClick,
 }: AvatarProps) {
   const [imgError, setImgError] = useState(false);
 
@@ -32,56 +32,61 @@ export default function Avatar({
   const initials = useMemo(() => {
     const safe = (name || '').trim();
     if (!safe) return 'U';
-    return safe
-      .replace(/\s+/g, ' ')
-      .split(' ')
-      .slice(0, 2)
-      .map(part => part[0]?.toUpperCase() ?? '')
-      .join('') || 'U';
+    return (
+      safe
+        .replace(/\s+/g, ' ')
+        .split(' ')
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase() ?? '')
+        .join('') || 'U'
+    );
   }, [name]);
 
-  const commonStyle: React.CSSProperties = {
-    width: size,
-    height: size,
-  };
+  const commonStyle: CSSProperties = { width: size, height: size };
 
-  // 优先显示图片；加载失败或未提供 src 时回退到首字母
+  // 有图：优先显示图片；失败则回退到首字母
   if (src && !imgError) {
     return (
       <img
         src={src}
         alt={name || 'User'}
-        title={title ?? name}
         onClick={onClick}
         onError={() => setImgError(true)}
         style={commonStyle}
         className={[
           'rounded-full object-cover select-none',
           onClick ? 'cursor-pointer' : '',
-          className
-        ].join(' ')}
+          className,
+        ]
+          .filter(Boolean)
+          .join(' ')}
         loading="lazy"
         decoding="async"
+        draggable={false}
       />
     );
   }
 
-  // 首字母 + 渐变背景的默认头像（科技感高、普适耐看）
+  // 无图或加载失败：首字母头像（无 title，避免黑框）
   return (
     <div
       role="img"
       aria-label={name || 'User'}
-      title={title ?? name}
       onClick={onClick}
       style={commonStyle}
       className={[
-        'rounded-full grid place-items-center select-none text-white font-bold',
+        'grid place-items-center rounded-full select-none text-white font-bold',
         'bg-gradient-to-br from-blue-500 to-purple-500',
         onClick ? 'cursor-pointer' : '',
-        className
-      ].join(' ')}
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      draggable={false}
     >
-      <span style={{ fontSize: Math.max(12, Math.floor(size * 0.45)) }}>{initials}</span>
+      <span style={{ fontSize: Math.max(12, Math.floor(size * 0.45)) }}>
+        {initials}
+      </span>
     </div>
   );
 }

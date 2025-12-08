@@ -29,7 +29,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "next-intl.config.js"
+    "next-intl.config.js",
+    "types"               // ✅ 新增：让 TS 识别 /types 下的声明文件
   ],
   "exclude": ["node_modules"]
 }

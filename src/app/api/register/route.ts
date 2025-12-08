@@ -31,9 +31,14 @@ function normalizePhone(input: string) {
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const username: string | undefined = body.username ?? body.name ?? body.login;
+    const username: string | undefined =
+      body.username ?? body.name ?? body.login;
     const rawIdentity: string | undefined =
-      body.identity ?? body.email ?? body.phone ?? body.emailOrPhone ?? body.emailOrPhoneOrUsername;
+      body.identity ??
+      body.email ??
+      body.phone ??
+      body.emailOrPhone ??
+      body.emailOrPhoneOrUsername;
     const password: string | undefined = body.password;
 
     if (!username?.trim() || !rawIdentity?.trim() || !password) {
@@ -45,21 +50,29 @@ export async function POST(req: Request) {
 
     const identity = rawIdentity.trim();
 
-    // 去重
+    // 去重：邮箱
     if (isEmail(identity)) {
       const email = identity.toLowerCase();
       const exists = await prisma.user.findFirst({ where: { email } });
       if (exists) return json({ code: 'EMAIL_EXISTS' }, 409);
     }
+    // 去重：手机号（多种格式）
     if (looksLikePhone(identity)) {
       const raw = identity;
       const compact = identity.replace(/[\s()-]/g, '');
       const normalized = normalizePhone(identity);
       const exists = await prisma.user.findFirst({
-        where: { OR: [{ phone: normalized }, { phone: compact }, { phone: raw }] },
+        where: {
+          OR: [
+            { phone: normalized },
+            { phone: compact },
+            { phone: raw },
+          ],
+        },
       });
       if (exists) return json({ code: 'PHONE_EXISTS' }, 409);
     }
+    // 去重：用户名（不区分大小写）
     try {
       const u = await prisma.user.findFirst({
         where: { username: { equals: username, mode: 'insensitive' } },
@@ -67,7 +80,7 @@ export async function POST(req: Request) {
       if (u) return json({ code: 'USERNAME_EXISTS' }, 409);
     } catch {}
 
-    // 组装入库数据（用 Prisma 类型）
+    // 组装入库数据
     const hashed = await bcrypt.hash(password, 10);
     const data: Prisma.UserCreateInput = {
       username,
@@ -78,20 +91,36 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.create({
       data,
-      select: { id: true, username: true, email: true, phone: true },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        phone: true,
+      },
     });
 
-    // 是否自动登录
-    const autoLogin = process.env.AUTO_LOGIN_AFTER_REGISTER === '1';
+    // 是否自动登录（保持你原有逻辑）
+    const autoLogin =
+      process.env.AUTO_LOGIN_AFTER_REGISTER === '1';
     if (autoLogin) {
       const secret = process.env.JWT_SECRET;
       if (secret) {
-        const token = jwt.sign(
-          { sub: user.id, username: user.username ?? null, email: user.email ?? null, phone: user.phone ?? null },
-          secret,
-          { expiresIn: '7d' }
-        );
+        // ✅ 这里补充 uid / userId，兼容 /api/me
+        const payload = {
+          uid: user.id,
+          userId: user.id,
+          username: user.username ?? null,
+          email: user.email ?? null,
+          phone: user.phone ?? null,
+        };
+
+        const token = jwt.sign(payload, secret, {
+          expiresIn: '7d',
+        });
+
         const res = json({ ok: true, userId: user.id }, 201);
+
+        // JWT cookie（原有功能）
         res.cookies.set(COOKIE_NAME, token, {
           httpOnly: true,
           sameSite: 'lax',
@@ -99,10 +128,21 @@ export async function POST(req: Request) {
           path: '/',
           maxAge: 60 * 60 * 24 * 7,
         });
+
+        // ✅ 额外：简单 userId cookie，给 /api/profile/verification 等用
+        res.cookies.set('userId', user.id, {
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          path: '/',
+          maxAge: 60 * 60 * 24 * 7,
+        });
+
         return res;
       }
     }
 
+    // 不自动登录时：保持原返回
     return json({ ok: true, userId: user.id }, 201);
   } catch (e) {
     console.error('[register] error:', e);

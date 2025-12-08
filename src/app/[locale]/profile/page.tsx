@@ -1,118 +1,161 @@
-// src/app/[locale]/profile/page.tsx
-'use client';
+// /src/app/[locale]/profile/page.tsx
+import ProfileLayout from '@/components/profile/ProfileLayout';
+import prisma from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
-import { useEffect, useState } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import Avatar from '@/components/Avatar';
+type Params = { locale: string };
 
-type MeUser = {
-  id: string;
-  username?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  avatarUrl?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
+export const metadata = {
+  title: 'Профиль — Onerinn',
 };
 
-export default function ProfilePage() {
-  const [user, setUser] = useState<MeUser | null>(null);
-  const [loading, setLoading] = useState(true);
-  const t = useTranslations('Profile');
-  const router = useRouter();
-  const locale = useLocale();
-  const prefix = locale === 'en' ? '' : `/${locale}`;
+export default async function ProfileHome({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  const { locale } = await params;
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await fetch('/api/me', { cache: 'no-store' });
-        if (!mounted) return;
-        if (!res.ok) {
-          router.replace(`${prefix}/login`);
-          return;
-        }
-        const data = await res.json();
-        if (!data?.user) {
-          router.replace(`${prefix}/login`);
-          return;
-        }
-        setUser(data.user);
-      } catch {
-        router.replace(`${prefix}/login`);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => { mounted = false; };
-  }, [router, prefix]);
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
 
-  if (loading) {
-    return (
-      <div className="max-w-xl mx-auto p-6">
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow p-6 animate-pulse">
-          <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-gray-200" />
-            <div className="space-y-2">
-              <div className="h-4 w-40 bg-gray-200 rounded" />
-              <div className="h-3 w-56 bg-gray-200 rounded" />
-              <div className="h-3 w-32 bg-gray-200 rounded" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  if (!userId) {
+    redirect(`/${locale}/login`);
   }
 
-  if (!user) return null;
+  const [artCount, favCount, user] = await Promise.all([
+    prisma.artwork.count({ where: { ownerId: userId } }),
+    prisma.favorite.count({ where: { userId } }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, username: true, email: true, avatarUrl: true, bio: true },
+    }),
+  ]);
+
+  const displayName =
+    user?.username?.trim() ||
+    user?.name?.trim() ||
+    session?.user?.name ||
+    'Без имени';
+
+  const email = user?.email || session?.user?.email || '—';
 
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow p-6">
-        <h1 className="text-xl font-semibold mb-4">{t('title')}</h1>
+    <ProfileLayout>
+      <div className="space-y-6">
+        {/* 顶部：头像 + 基本信息 */}
+        <section className="rounded-xl border bg-white p-4 sm:p-6">
+          <div className="flex items-start gap-4">
+            <img
+              src={user?.avatarUrl || '/images/default-avatar.png'}
+              alt="Avatar"
+              className="h-16 w-16 rounded-full object-cover ring-1 ring-black/5 sm:h-20 sm:w-20"
+            />
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl font-semibold text-gray-900 truncate">
+                {displayName}
+              </h1>
+              <p className="text-sm text-gray-600 truncate">{email}</p>
+              {user?.bio ? (
+                <p className="mt-2 text-sm text-gray-700">{user.bio}</p>
+              ) : (
+                <p className="mt-2 text-sm text-gray-400">Нет описания профиля.</p>
+              )}
 
-        <div className="flex items-center gap-4">
-          <Avatar
-            name={user.username || user.email || 'User'}
-            src={user.avatarUrl ?? undefined}
-            size={64}
-          />
-          <div className="min-w-0">
-            <div className="text-lg font-medium truncate">
-              {user.username || '—'}
-            </div>
-            <div className="text-gray-600 text-sm truncate">
-              {user.email || '—'}
-            </div>
-            <div className="text-gray-600 text-sm truncate">
-              {user.phone || '—'}
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <Link
+                  href={`/${locale}/profile/edit`}
+                  className="inline-flex items-center rounded-lg border bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                >
+                  ✏️ Редактировать
+                </Link>
+                <Link
+                  href={`/${locale}/profile/security`}
+                  className="inline-flex items-center rounded-lg border bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                >
+                  🔒 Безопасность
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="mt-6 flex gap-3">
-          <button
-            onClick={() => router.push(`${prefix}/profile/edit`)}
-            className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-          >
-            {t('edit')}
-          </button>
-          <button
-            onClick={() => router.back()}
-            className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-50"
-          >
-            {t('back')}
-          </button>
-        </div>
+        {/* 统计卡片 */}
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            title="Произведения"
+            value={artCount}
+            href={`/${locale}/profile/artworks`}
+          />
+          <StatCard
+            title="Избранное"
+            value={favCount}
+            href={`/${locale}/profile/favorites`}
+          />
+          <StatCard title="Подписки" value={0} />
+          <StatCard title="Подписчики" value={0} />
+        </section>
 
-        <div className="mt-6 text-xs text-gray-500 space-y-1">
-          <div>{t('uid')}: {user.id}</div>
-          {user.createdAt && <div>{t('createdAt')}: {new Date(user.createdAt).toLocaleString()}</div>}
-          {user.updatedAt && <div>{t('updatedAt')}: {new Date(user.updatedAt).toLocaleString()}</div>}
-        </div>
+        {/* 快捷入口 */}
+        <section className="rounded-xl border bg-white p-4 sm:p-6">
+          <h2 className="mb-3 text-base font-semibold text-gray-900">Быстрые действия</h2>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={`/${locale}/profile/artworks`}
+              className="inline-flex items-center rounded-lg border bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+            >
+              🖼️ Мои произведения
+            </Link>
+            <Link
+              href={`/${locale}/profile/favorites`}
+              className="inline-flex items-center rounded-lg border bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+            >
+              ⭐ Избранное
+            </Link>
+            <Link
+              href={`/${locale}/profile/edit`}
+              className="inline-flex items-center rounded-lg border bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+            >
+              ✏️ Редактировать профиль
+            </Link>
+            <Link
+              href={`/${locale}/profile/security`}
+              className="inline-flex items-center rounded-lg border bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+            >
+              🔒 Сменить пароль
+            </Link>
+          </div>
+        </section>
       </div>
+    </ProfileLayout>
+  );
+}
+
+function StatCard({
+  title,
+  value,
+  href,
+}: {
+  title: string;
+  value: number;
+  href?: string;
+}) {
+  const content = (
+    <div className="rounded-xl border bg-white p-4 shadow-sm transition hover:shadow">
+      <p className="text-sm text-gray-500">{title}</p>
+      <p className="mt-1 text-2xl font-semibold text-gray-900">{value}</p>
     </div>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block">
+        {content}
+      </Link>
+    );
+  }
+  return content; // ✅ 不再使用 JSX.Element 断言，避免 'JSX' 命名空间错误
 }

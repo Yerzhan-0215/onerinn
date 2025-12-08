@@ -1,47 +1,80 @@
+// src/app/api/me/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// 与 /api/logout 保持一致
+const COOKIE_NAMES = [
+  'onerinn_session',
+  'session',
+  'auth_token',
+  'next-auth.session-token',
+  '__Secure-next-auth.session-token',
+];
+
+// 单例 prisma（避免 dev 热重载创建过多连接）
+const prisma = (globalThis as any).__prisma ?? new PrismaClient();
+if (!(globalThis as any).__prisma) (globalThis as any).__prisma = prisma;
 
 function json(data: any, init?: number | ResponseInit) {
-  return NextResponse.json(data, init);
+  const res = NextResponse.json(
+    data,
+    typeof init === 'number' ? { status: init } : init,
+  );
+  res.headers.set('Cache-Control', 'no-store');
+  return res;
 }
 
-function getBearer(req: Request): string | null {
-  const auth = req.headers.get('authorization') || req.headers.get('Authorization');
-  if (!auth) return null;
-  const [scheme, token] = auth.split(' ');
-  if (scheme?.toLowerCase() !== 'bearer' || !token) return null;
-  return token;
-}
+export async function GET() {
+  const jar = await cookies();
 
-export async function GET(req: Request) {
-  try {
-    const secret = process.env.JWT_SECRET;
-    if (!secret) return json({ code: 'SERVER_MISCONFIGURED' }, { status: 500 });
-
-    // 1) 优先 Authorization Bearer；2) 其次 HttpOnly cookie
-    let token = getBearer(req);
-    if (!token) {
-      const cookieHeader = req.headers.get('cookie') || '';
-      const m = cookieHeader.match(/(?:^|;\s*)onerinn_session=([^;]+)/);
-      token = m ? decodeURIComponent(m[1]) : null;
+  // 依次尝试读取候选 cookie，取到第一个非空值
+  let token: string | undefined;
+  for (const name of COOKIE_NAMES) {
+    const c = jar.get(name);
+    if (c?.value) {
+      token = c.value;
+      break;
     }
-    if (!token) return json({ code: 'NO_TOKEN' }, { status: 401 });
+  }
 
-    const payload = jwt.verify(token, secret) as any; // 会抛错则走 catch
-    const uid = String(payload.uid);
+  // 没有会话 Cookie => 明确未登录
+  if (!token) return json({ user: null }, { status: 401 });
+
+  const secret = process.env.JWT_SECRET;
+  if (!secret) return json({ user: null }, { status: 401 });
+
+  try {
+    const payload = jwt.verify(token, secret) as any;
+
+    // ✅ 这里增加对 uid / userId / sub 的兼容
+    const uidRaw =
+      payload.uid || payload.userId || payload.sub || '';
+    const uid = String(uidRaw || '');
+
+    if (!uid) return json({ user: null }, { status: 401 });
 
     const user = await prisma.user.findUnique({
       where: { id: uid },
-      select: { id: true, username: true, email: true, phone: true, avatarUrl: true, createdAt: true, updatedAt: true }
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        phone: true,
+        avatarUrl: true,
+        createdAt: true,
+        updatedAt: true,
+        // ✅ 让前端拿到卖家验证状态
+        sellerVerificationStatus: true,
+      },
     });
-    if (!user) return json({ code: 'USER_NOT_FOUND' }, { status: 401 });
+
+    if (!user) return json({ user: null }, { status: 401 });
 
     return json({ user }, { status: 200 });
-  } catch (e: any) {
-    if (e?.name === 'TokenExpiredError') return json({ code: 'TOKEN_EXPIRED' }, { status: 401 });
-    return json({ code: 'UNAUTHORIZED' }, { status: 401 });
+  } catch {
+    // TokenExpiredError / JsonWebTokenError 等统一视为未登录
+    return json({ user: null }, { status: 401 });
   }
 }
