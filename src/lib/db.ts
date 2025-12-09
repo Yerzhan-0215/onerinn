@@ -1,14 +1,10 @@
-// /src/lib/db.ts
-import { PrismaClient } from "@prisma/client";
+// src/lib/db.ts
+// 兼容旧代码：将原来 new PrismaClient 的位置替换为单例导出
+import prisma from './prisma';
 
-declare global {
-  var prisma: PrismaClient | undefined;
-}
+export default prisma;
 
-export const db =
-  globalThis.prisma ||
-  new PrismaClient({
-    log: ["warn", "error"], // 开发期需要也可以加 "query","info"
-  });
-
-if (process.env.NODE_ENV !== "production") globalThis.prisma = db;
+// 如果你之前在 db.ts 里导出了 helper 函数，也可以在这里继续定义并导出，例如：
+// export async function getUserById(id: string) {
+//   return prisma.user.findUnique({ where: { id } });
+// }

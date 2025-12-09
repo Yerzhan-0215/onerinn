@@ -1,16 +1,7 @@
-// 文件路径: src/lib/prismadb.ts
-import { PrismaClient } from "@prisma/client";
-
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
-
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({
-    log: ["query"],
-  });
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// src/lib/prismadb.ts
+// 仅作为兼容层：把以前直接 new PrismaClient 的文件改为导出同一个实例
+import prisma from './prisma';
 
 export default prisma;
+
+// （如果你的代码引用的是 prismadb.ts，保留导出名以兼容）
